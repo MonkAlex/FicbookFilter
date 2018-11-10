@@ -10,7 +10,7 @@
 // @require         http://code.jquery.com/jquery-latest.min.js
 // @downloadURL     https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
 // @updateURL       https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
-// @version         2018.11.10b
+// @version         2018.11.10c
 // @author          MonkAlex
 // ==/UserScript==
 
@@ -56,12 +56,13 @@ function getBannedDirections() {
  * @param title текст при наведении.
  * @param inSup true, если это кнопки у загловока, там дополнительно используется sup элемент.
  * @param fanfic контекст выполнения, по идее - фанфик.
+ * @param color цвет иконки.
  * @param click обработчик нажатия на кнопку.
  * @returns {HTMLElement} собственно кнопка, к которой потом можно повесить обработчик.
  */
-function addButton(root, title, inSup, fanfic, click) {
+function addButton(root, title, inSup, fanfic, color, click) {
     let button = document.createElement("button");
-    button.innerHTML = '<svg viewBox="0 0 32 32" width="16" fill="rgb(180, 0, 0)">\n' +
+    button.innerHTML = '<svg viewBox="0 0 32 32" width="16" fill="' + color +'">\n' +
         '<path d="M32 11.2c0 2.7-1.16 5.12-3.02 6.8H29L19 28c-1 1-2 2-3 2s-2-1-3-2L3.02 18A9.2 9.2 0 0 1 13.93 3.31L11 8l7 4-4 10 11-12-7-4 2.46-3.7A9.2 9.2 0 0 1 32 11.2z"></path>\n' +
         '</svg>';
     button.title = title;
@@ -96,54 +97,63 @@ class Fanfic {
         this.directionName = this.direction.className.replace("icon-", "");
         this.article = article;
 
-        // Add removing direction button
-        this.directionBtn = addButton(this.direction, 'Забанить этот тип фанфиков', false, this, function () {
-            this.fanfic.banDirection();
-        });
-        // Add removing fanfic button
-        this.fanficBtn = addButton(this.title.parentElement, 'Забанить этот фанфик', true, this, function () {
+        this.fanficBtn = addButton(this.title.parentElement, 'Забанить фанфик', true, this, 'rgb(180, 0, 0)', function () {
             this.fanfic.banFanfic();
         });
-        // Add removing author button
-        this.authorBtn = addButton(this.author, 'Забанить этого автора', false, this, function () {
+        this.authorBtn = addButton(this.author, 'Забанить автора', false, this, 'rgb(180, 0, 0)', function () {
             this.fanfic.banAuthor();
         });
-        this.resurrectBtn = addButton(this.title.parentElement, "Вернуть", true, this, function () {
-            this.fanfic.restoreAll();
+        this.directionBtn = addButton(this.direction, 'Забанить тип фанфиков', false, this, 'rgb(180, 0, 0)', function () {
+            this.fanfic.banDirection();
         });
-        this.resurrectBtn.style.display = "none";
+        this.restoreFanficBtn = addButton(this.title.parentElement, "Вернуть фанфик", true, this, 'rgb(220, 220, 0)', function () {
+            this.fanfic.restoreFanfic();
+        });
+        this.restoreAuthorBtn = addButton(this.author, "Вернуть автора", false, this, 'rgb(220, 220, 0)', function () {
+            this.fanfic.restoreAuthor();
+        });
+        this.restoreDirectionBtn = addButton(this.direction, "Вернуть тип фанфиков", false, this, 'rgb(220, 220, 0)', function () {
+            this.fanfic.restoreDirection();
+        });
+        this.restoreFanficBtn.style.display = "none";
+        this.restoreAuthorBtn.style.display = "none";
+        this.restoreDirectionBtn.style.display = "none";
     }
 
-    restoreAll() {
-        let fullPage = true;
+    restoreFanfic() {
+        let tempFanfics = getBannedFanfics();
+        if (tempFanfics.includes(this.fanficId)) {
+            tempFanfics.splice(tempFanfics.indexOf(this.fanficId), 1);
+            setBannedFanfics(tempFanfics);
+            console.warn('restore fanfic ' + this.fanficId);
+        }
+        this.unHideFanfic();
+    }
+
+    restoreAuthor(){
         let tempAuthors = getBannedAuthors();
         if (tempAuthors.includes(this.authorId)) {
             tempAuthors.splice(tempAuthors.indexOf(this.authorId), 1);
             setBannedAuthors(tempAuthors);
             console.warn('restore author ' + this.authorId);
         }
-        let tempFanfics = getBannedFanfics();
-        if (tempFanfics.includes(this.fanficId)) {
-            tempFanfics.splice(tempFanfics.indexOf(this.fanficId), 1);
-            setBannedFanfics(tempFanfics);
-            fullPage = false;
-            console.warn('restore fanfic ' + this.fanficId);
-        }
+        globalFanfics.forEach(function (fanfic) {
+            if (!fanfic.getFanficBanned())
+                fanfic.unHideFanfic();
+        })
+    }
+
+    restoreDirection(){
         let tempDirections = getBannedDirections();
         if (tempDirections.includes(this.directionName)) {
             tempDirections.splice(tempDirections.indexOf(this.directionName), 1);
             setBannedDirections(tempDirections);
             console.warn('restore direction ' + this.directionName);
         }
-        if (fullPage)
-        {
-            globalFanfics.forEach(function (fanfic) {
-                if (!fanfic.getFanficBanned())
-                    fanfic.unHideFanfic();
-            })
-        }
-        else
-            this.unHideFanfic();
+        globalFanfics.forEach(function (fanfic) {
+            if (!fanfic.getFanficBanned())
+                fanfic.unHideFanfic();
+        })
     }
 
     banAuthor() {
@@ -177,30 +187,69 @@ class Fanfic {
     }
 
     hideFanfic() {
-        this.fanficBtn.style.display = "none";
-        this.authorBtn.style.display = "none";
-        this.directionBtn.style.display = "none";
-        this.resurrectBtn.style.display = "";
-        this.article.className += " fanfic-block-disliked";
+        let fanfic_block_disliked = " fanfic-block-disliked";
+        let disliked_parameter_link = " disliked-parameter-link";
+
+        if (this.getFanficBanned())
+        {
+            if (!this.article.className.includes(fanfic_block_disliked))
+            {
+                this.article.className += fanfic_block_disliked;
+            }
+        }
         if (this.authorBanned())
-            this.authorLink.className += " disliked-parameter-link";
+        {
+            if (!this.authorLink.className.includes(disliked_parameter_link))
+            {
+                this.authorLink.className += disliked_parameter_link;
+            }
+            this.restoreAuthorBtn.style.display = "";
+            this.authorBtn.style.display = "none";
+        }
         if (this.fanficBanned())
-            this.title.className += " disliked-parameter-link";
+        {
+            if (!this.title.className.includes(disliked_parameter_link))
+            {
+                this.title.className += disliked_parameter_link;
+            }
+            this.restoreFanficBtn.style.display = "";
+            this.fanficBtn.style.display = "none";
+        }
+        if (this.directionBanned())
+        {
+            this.restoreDirectionBtn.style.display = "";
+            this.directionBtn.style.display = "none";
+        }
 
         // TODO: fics can be hiden
         // $thumb.parent().parent().hide()
     }
 
     unHideFanfic() {
-        this.resurrectBtn.style.display = "none";
-        this.fanficBtn.style.display = "";
-        this.authorBtn.style.display = "";
-        this.directionBtn.style.display = "";
-        this.article.className = this.article.className.replace(" fanfic-block-disliked", "");
+        let fanfic_block_disliked = " fanfic-block-disliked";
+        let disliked_parameter_link = " disliked-parameter-link";
+
+        if (!this.getFanficBanned())
+        {
+            this.article.className = this.article.className.replace(fanfic_block_disliked, "");
+        }
         if (!this.authorBanned())
-            this.authorLink.className = this.authorLink.className.replace(" disliked-parameter-link", "");
+        {
+            this.authorLink.className = this.authorLink.className.replace(disliked_parameter_link, "");
+            this.restoreAuthorBtn.style.display = "none";
+            this.authorBtn.style.display = "";
+        }
         if (!this.fanficBanned())
-            this.title.className = this.title.className.replace(" disliked-parameter-link", "");
+        {
+            this.title.className = this.title.className.replace(disliked_parameter_link, "");
+            this.restoreFanficBtn.style.display = "none";
+            this.fanficBtn.style.display = "";
+        }
+        if (!this.directionBanned())
+        {
+            this.restoreDirectionBtn.style.display = "none";
+            this.directionBtn.style.display = "";
+        }
 
         // TODO: fics can be hiden
         // $thumb.parent().parent().hide()
