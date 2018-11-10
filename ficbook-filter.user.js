@@ -1,6 +1,5 @@
 // ==UserScript==
-// @name            Ficbook filter
-// @name:ru         Фильтр для Ficbook
+// @name            Фильтр для Ficbook
 // @description     Фильтровать фанфики по разным параметрам.
 // @license         MIT
 // @namespace       https://github.com/MonkAlex/FicbookFilter
@@ -11,7 +10,7 @@
 // @require         http://code.jquery.com/jquery-latest.min.js
 // @downloadURL     https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
 // @updateURL       https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
-// @version         2018.11.10a
+// @version         2018.11.10b
 // @author          MonkAlex
 // ==/UserScript==
 
@@ -234,4 +233,4 @@ class Fanfic {
             fanfic.hideFanfic();
     });
 })();
-console.log("Ficbook filter " + GM.info.script.version + " loaded.");
+console.log("Ficbook filter " + GM_info.script.version + " loaded.");
