@@ -1,2 +1,22 @@
 # FicbookFilter
-Ficbook filter for userscript manager (Tampermonkey for example).
+Пользовательский фильтр на Ficbook.
+
+# Установка
+ * Для работы нужен [Tampermonkey](https://tampermonkey.net/) или [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/).
+ * [Установите скрипт](../../raw/master/ficbook-filter.user.js)
+ 
+# Как пользоваться
+
+ * Открываете любую страницу [Ficbook](https://ficbook.net/)
+ * Находите фанфик, который вам не нравится ![фанфик](../../raw/master/docs/select_fanfic.png)
+ * И отмечаете признак, который вам не нравится ![фанфик](../../raw/master/docs/select_fanfic_banned..png)
+ * _Красная иконка - то, что можно забанить. Желтая - разбанить._
+ 
+# Проблемы?
+ * Посмотрите [сюда](../../issues) и опишите свою проблему, если о ней ещё никто не написал.
+ 
+# В планах
+* Пейринги
+* Настройки
+  * Возможность скрывать фанфики целиком, вместо затенения
+  * Просмотр заблокированных параметров (в далеком будущем)
