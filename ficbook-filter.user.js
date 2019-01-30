@@ -10,7 +10,7 @@
 // @require         http://code.jquery.com/jquery-latest.min.js
 // @downloadURL     https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
 // @updateURL       https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
-// @version         2018.11.10d
+// @version         2019.01.30a
 // @author          MonkAlex
 // ==/UserScript==
 
@@ -39,6 +39,10 @@ function setBannedFandoms(fandoms) {
     localStorage.setItem('ficbookFilter.bannedFandoms', JSON.stringify(fandoms))
 }
 
+function setBannedPairings(pairings) {
+    localStorage.setItem('ficbookFilter.bannedPairings', JSON.stringify(pairings))
+}
+
 function getBannedAuthors() {
     const str = localStorage.getItem('ficbookFilter.bannedAuthors');
     return str ? JSON.parse(str) : []
@@ -56,6 +60,11 @@ function getBannedDirections() {
 
 function getBannedFandoms() {
     const str = localStorage.getItem('ficbookFilter.bannedFandoms');
+    return str ? JSON.parse(str) : []
+}
+
+function getBannedPairings() {
+    const str = localStorage.getItem('ficbookFilter.bannedPairings');
     return str ? JSON.parse(str) : []
 }
 
@@ -161,6 +170,82 @@ class FanficFandom {
         }
     }
 }
+class FanficPairing {
+    constructor(fanfic, pairing){
+        this.fanfic = fanfic;
+        this.pairing = pairing;
+        this.wrapper = $(pairing).wrap("<a/>")[0].parentElement;
+        this.pairingUri = decodeURI(this.pairing.href.match('\/pairings\/(.*)')[1]);
+
+        this.pairingBtn = addButton(this.wrapper, 'Забанить пейринг', false, this, 'rgb(180, 0, 0)', function () {
+            this.fanfic.banPairing();
+        });
+        this.restorePairingBtn = addButton(this.wrapper, "Вернуть пейринг", false, this, 'rgb(220, 220, 0)', function () {
+            this.fanfic.restorePairing();
+        });
+        this.restorePairingBtn.style.display = "none";
+    }
+
+    restorePairing(){
+        let tempPairings = getBannedPairings();
+        if (tempPairings.includes(this.pairingUri)) {
+            tempPairings.splice(tempPairings.indexOf(this.pairingUri), 1);
+            setBannedPairings(tempPairings);
+            console.warn('restore pairing ' + this.pairingUri);
+        }
+        globalFanfics.forEach(function (fanfic) {
+            fanfic.unHideFanfic();
+        })
+    }
+
+    banPairing() {
+        console.warn('hide pairing ' + this.pairingUri);
+        let bannedPairings = getBannedPairings();
+        bannedPairings.push(this.pairingUri);
+        setBannedPairings(bannedPairings);
+        globalFanfics.forEach(function (fanfic) {
+            fanfic.hideFanfic();
+        });
+    }
+
+    pairingBanned() {
+        return getBannedPairings().includes(this.pairingUri);
+    }
+
+    hide(){
+        let disliked_parameter_link = " disliked-parameter-link";
+        let pairing_highlight = " pairing-highlight";
+
+        if (this.pairingBanned())
+        {
+            if (!this.pairing.className.includes(disliked_parameter_link))
+            {
+                this.pairing.className += disliked_parameter_link;
+            }
+            if (this.pairing.className.includes(pairing_highlight))
+            {
+                this.pairing.className = this.pairing.className.replace(pairing_highlight, "");
+            }
+            this.restorePairingBtn.style.display = "";
+            this.pairingBtn.style.display = "none";
+        }
+    }
+
+    unHide(){
+        let disliked_parameter_link = " disliked-parameter-link";
+        let pairing_highlight = " pairing-highlight";
+        if (!this.pairingBanned())
+        {
+            this.pairing.className = this.pairing.className.replace(disliked_parameter_link, "");
+            if (!this.pairing.className.includes(pairing_highlight))
+            {
+                this.pairing.className += pairing_highlight;
+            }
+            this.restorePairingBtn.style.display = "none";
+            this.pairingBtn.style.display = "";
+        }
+    }
+}
 
 class Fanfic {
     constructor(article) {
@@ -175,6 +260,10 @@ class Fanfic {
 
         this.fandoms = Array.from(article.querySelector("dl.info dd").querySelectorAll("a")).map(function (fandom) {
             return new FanficFandom(this, fandom);
+        }, this);
+
+        this.pairings = Array.from(article.querySelectorAll("dl.info a.pairing-link")).map(function (pairing) {
+            return new FanficPairing(this, pairing);
         }, this);
 
         this.fanficBtn = addButton(this.title.parentElement, 'Забанить фанфик', true, this, 'rgb(180, 0, 0)', function () {
@@ -304,6 +393,9 @@ class Fanfic {
         this.fandoms.forEach(function (fandom) {
             fandom.hide();
         });
+        this.pairings.forEach(function (pairing) {
+            pairing.hide();
+        });
 
         // TODO: fics can be hiden
         // $thumb.parent().parent().hide()
@@ -337,6 +429,9 @@ class Fanfic {
         this.fandoms.forEach(function (fandom) {
             fandom.unHide();
         });
+        this.pairings.forEach(function (pairing) {
+            pairing.unHide();
+        });
 
 
         // TODO: fics can be hiden
@@ -344,7 +439,11 @@ class Fanfic {
     }
 
     getFanficBanned() {
-        return this.fanficBanned() || this.authorBanned() || this.directionBanned() || this.anyFandomBanned();
+        return this.fanficBanned()
+            || this.authorBanned()
+            || this.directionBanned()
+            || this.anyFandomBanned()
+            || this.anyPairingBanned();
     }
 
     directionBanned() {
@@ -362,6 +461,12 @@ class Fanfic {
     anyFandomBanned(){
         return this.fandoms.some(function (fandom) {
             return fandom.fandomBanned();
+        });
+    }
+
+    anyPairingBanned(){
+        return this.pairings.some(function (pairing) {
+            return pairing.pairingBanned();
         });
     }
 }
