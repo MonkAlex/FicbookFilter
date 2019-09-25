@@ -10,7 +10,7 @@
 // @require         http://code.jquery.com/jquery-latest.min.js
 // @downloadURL     https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
 // @updateURL       https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
-// @version         2019.01.30a
+// @version         2019.09.25a
 // @author          MonkAlex
 // ==/UserScript==
 
@@ -86,7 +86,6 @@ function addButton(root, title, inSup, fanfic, color, click) {
     button.title = title;
 
     let bs = button.style;
-    bs.verticalAlign = 'bottom';
     bs.padding = '0px';
     bs.background = 'none';
     bs.border = 'none';
@@ -254,8 +253,8 @@ class Fanfic {
         this.authorLink = this.author.querySelector("a");
         this.authorId = parseInt(this.authorLink.href.match(/\/(\d+)+/)[1], 10);
         this.fanficId = parseInt(this.title.href.match(/\/(\d+)+/)[1], 10);
-        this.direction = article.querySelector("div.direction i");
-        this.directionName = this.direction.className.replace("icon-", "");
+        this.direction = article.querySelector("span.direction");
+        this.directionName = this.direction.className.replace("direction direction-before-", "");
         this.article = article;
 
         this.fandoms = Array.from(article.querySelector("dl.info dd").querySelectorAll("a")).map(function (fandom) {
