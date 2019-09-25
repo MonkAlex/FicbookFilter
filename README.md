@@ -2,7 +2,7 @@
 Пользовательский фильтр на Ficbook.
 
 # Установка
- * Для работы нужен [Tampermonkey](https://tampermonkey.net/) или [Greasemonkey](https://addons.mozilla.org/en-US/firefox/addon/greasemonkey/).
+ * Для работы нужен [Tampermonkey](https://tampermonkey.net/)
  * [Установите скрипт](../../raw/master/ficbook-filter.user.js)
  
 # Как пользоваться
