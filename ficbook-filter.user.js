@@ -10,7 +10,7 @@
 // @require         http://code.jquery.com/jquery-latest.min.js
 // @downloadURL     https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
 // @updateURL       https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
-// @version         2019.09.25a
+// @version         2019.11.13a
 // @author          MonkAlex
 // ==/UserScript==
 
@@ -249,7 +249,7 @@ class FanficPairing {
 class Fanfic {
     constructor(article) {
         this.title = article.querySelector("a.visit-link");
-        this.author = article.querySelector("div.description ul.listing.list-inline li");
+        this.author = article.querySelector("span.author");
         this.authorLink = this.author.querySelector("a");
         this.authorId = parseInt(this.authorLink.href.match(/\/(\d+)+/)[1], 10);
         this.fanficId = parseInt(this.title.href.match(/\/(\d+)+/)[1], 10);
