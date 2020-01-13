@@ -10,7 +10,7 @@
 // @require         http://code.jquery.com/jquery-latest.min.js
 // @downloadURL     https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
 // @updateURL       https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
-// @version         2019.11.13a
+// @version         2020.01.13a
 // @author          MonkAlex
 // ==/UserScript==
 
@@ -43,6 +43,10 @@ function setBannedPairings(pairings) {
     localStorage.setItem('ficbookFilter.bannedPairings', JSON.stringify(pairings))
 }
 
+function setBannedSizes(sizes) {
+    localStorage.setItem('ficbookFilter.bannedSizes', JSON.stringify(sizes))
+}
+
 function getBannedAuthors() {
     const str = localStorage.getItem('ficbookFilter.bannedAuthors');
     return str ? JSON.parse(str) : []
@@ -68,6 +72,11 @@ function getBannedPairings() {
     return str ? JSON.parse(str) : []
 }
 
+function getBannedSizes() {
+    const str = localStorage.getItem('ficbookFilter.bannedSizes');
+    return str ? JSON.parse(str) : []
+}
+
 /**
  * Добавить кнопку "заблокировать".
  * @param root элемент, к которому прицепится кнопка.
@@ -80,7 +89,7 @@ function getBannedPairings() {
  */
 function addButton(root, title, inSup, fanfic, color, click) {
     let button = document.createElement("button");
-    button.innerHTML = '<svg viewBox="0 0 32 32" width="16" fill="' + color +'">\n' +
+    button.innerHTML = '<svg viewBox="0 0 32 32" width="16" fill="' + color + '">\n' +
         '<path d="M32 11.2c0 2.7-1.16 5.12-3.02 6.8H29L19 28c-1 1-2 2-3 2s-2-1-3-2L3.02 18A9.2 9.2 0 0 1 13.93 3.31L11 8l7 4-4 10 11-12-7-4 2.46-3.7A9.2 9.2 0 0 1 32 11.2z"></path>\n' +
         '</svg>';
     button.title = title;
@@ -104,7 +113,7 @@ function addButton(root, title, inSup, fanfic, color, click) {
 }
 
 class FanficFandom {
-    constructor(fanfic, fandom){
+    constructor(fanfic, fandom) {
         this.fanfic = fanfic;
         this.fandom = fandom;
         this.wrapper = $(fandom).wrap("<a/>")[0].parentElement;
@@ -119,7 +128,7 @@ class FanficFandom {
         this.restoreFandomBtn.style.display = "none";
     }
 
-    restoreFandom(){
+    restoreFandom() {
         let tempFandoms = getBannedFandoms();
         if (tempFandoms.includes(this.fandomUri)) {
             tempFandoms.splice(tempFandoms.indexOf(this.fandomUri), 1);
@@ -145,13 +154,11 @@ class FanficFandom {
         return getBannedFandoms().includes(this.fandomUri);
     }
 
-    hide(){
+    hide() {
         let disliked_parameter_link = " disliked-parameter-link";
 
-        if (this.fandomBanned())
-        {
-            if (!this.fandom.className.includes(disliked_parameter_link))
-            {
+        if (this.fandomBanned()) {
+            if (!this.fandom.className.includes(disliked_parameter_link)) {
                 this.fandom.className += disliked_parameter_link;
             }
             this.restoreFandomBtn.style.display = "";
@@ -159,18 +166,18 @@ class FanficFandom {
         }
     }
 
-    unHide(){
+    unHide() {
         let disliked_parameter_link = " disliked-parameter-link";
-        if (!this.fandomBanned())
-        {
+        if (!this.fandomBanned()) {
             this.fandom.className = this.fandom.className.replace(disliked_parameter_link, "");
             this.restoreFandomBtn.style.display = "none";
             this.fandomBtn.style.display = "";
         }
     }
 }
+
 class FanficPairing {
-    constructor(fanfic, pairing){
+    constructor(fanfic, pairing) {
         this.fanfic = fanfic;
         this.pairing = pairing;
         this.wrapper = $(pairing).wrap("<a/>")[0].parentElement;
@@ -185,7 +192,7 @@ class FanficPairing {
         this.restorePairingBtn.style.display = "none";
     }
 
-    restorePairing(){
+    restorePairing() {
         let tempPairings = getBannedPairings();
         if (tempPairings.includes(this.pairingUri)) {
             tempPairings.splice(tempPairings.indexOf(this.pairingUri), 1);
@@ -211,18 +218,15 @@ class FanficPairing {
         return getBannedPairings().includes(this.pairingUri);
     }
 
-    hide(){
+    hide() {
         let disliked_parameter_link = " disliked-parameter-link";
         let pairing_highlight = " pairing-highlight";
 
-        if (this.pairingBanned())
-        {
-            if (!this.pairing.className.includes(disliked_parameter_link))
-            {
+        if (this.pairingBanned()) {
+            if (!this.pairing.className.includes(disliked_parameter_link)) {
                 this.pairing.className += disliked_parameter_link;
             }
-            if (this.pairing.className.includes(pairing_highlight))
-            {
+            if (this.pairing.className.includes(pairing_highlight)) {
                 this.pairing.className = this.pairing.className.replace(pairing_highlight, "");
             }
             this.restorePairingBtn.style.display = "";
@@ -230,14 +234,12 @@ class FanficPairing {
         }
     }
 
-    unHide(){
+    unHide() {
         let disliked_parameter_link = " disliked-parameter-link";
         let pairing_highlight = " pairing-highlight";
-        if (!this.pairingBanned())
-        {
+        if (!this.pairingBanned()) {
             this.pairing.className = this.pairing.className.replace(disliked_parameter_link, "");
-            if (!this.pairing.className.includes(pairing_highlight))
-            {
+            if (!this.pairing.className.includes(pairing_highlight)) {
                 this.pairing.className += pairing_highlight;
             }
             this.restorePairingBtn.style.display = "none";
@@ -255,6 +257,10 @@ class Fanfic {
         this.fanficId = parseInt(this.title.href.match(/\/(\d+)+/)[1], 10);
         this.direction = article.querySelector("span.direction");
         this.directionName = this.direction.className.replace("direction direction-before-", "");
+        this.size = [...article.querySelectorAll('dd')]
+            .filter(e => e.previousElementSibling != null && e.previousElementSibling.innerText == "Размер:")[0]
+            .querySelector('strong');
+        this.sizeName = this.size.innerText;
         this.article = article;
 
         this.fandoms = Array.from(article.querySelector("dl.info dd").querySelectorAll("a")).map(function (fandom) {
@@ -274,6 +280,9 @@ class Fanfic {
         this.directionBtn = addButton(this.direction, 'Забанить тип фанфиков', false, this, 'rgb(180, 0, 0)', function () {
             this.fanfic.banDirection();
         });
+        this.sizeBtn = addButton(this.size.parentElement, `Забанить размер фанфика (${this.sizeName})`, false, this, 'rgb(180, 0, 0)', function () {
+            this.fanfic.banSize();
+        });
         this.restoreFanficBtn = addButton(this.title.parentElement, "Вернуть фанфик", true, this, 'rgb(220, 220, 0)', function () {
             this.fanfic.restoreFanfic();
         });
@@ -283,10 +292,14 @@ class Fanfic {
         this.restoreDirectionBtn = addButton(this.direction, "Вернуть тип фанфиков", false, this, 'rgb(220, 220, 0)', function () {
             this.fanfic.restoreDirection();
         });
+        this.restoreSizeBtn = addButton(this.size.parentElement, `Вернуть размер фанфика (${this.sizeName})`, false, this, 'rgb(220, 220, 0)', function () {
+            this.fanfic.restoreSize();
+        });
 
         this.restoreFanficBtn.style.display = "none";
         this.restoreAuthorBtn.style.display = "none";
         this.restoreDirectionBtn.style.display = "none";
+        this.restoreSizeBtn.style.display = "none";
     }
 
     restoreFanfic() {
@@ -299,7 +312,7 @@ class Fanfic {
         this.unHideFanfic();
     }
 
-    restoreAuthor(){
+    restoreAuthor() {
         let tempAuthors = getBannedAuthors();
         if (tempAuthors.includes(this.authorId)) {
             tempAuthors.splice(tempAuthors.indexOf(this.authorId), 1);
@@ -312,12 +325,25 @@ class Fanfic {
         })
     }
 
-    restoreDirection(){
+    restoreDirection() {
         let tempDirections = getBannedDirections();
         if (tempDirections.includes(this.directionName)) {
             tempDirections.splice(tempDirections.indexOf(this.directionName), 1);
             setBannedDirections(tempDirections);
             console.warn('restore direction ' + this.directionName);
+        }
+        globalFanfics.forEach(function (fanfic) {
+            if (!fanfic.getFanficBanned())
+                fanfic.unHideFanfic();
+        })
+    }
+
+    restoreSize() {
+        let tempSizes = getBannedSizes();
+        if (tempSizes.includes(this.sizeName)) {
+            tempSizes.splice(tempSizes.indexOf(this.sizeName), 1);
+            setBannedSizes(tempSizes);
+            console.warn('restore size ' + this.sizeName);
         }
         globalFanfics.forEach(function (fanfic) {
             if (!fanfic.getFanficBanned())
@@ -355,39 +381,47 @@ class Fanfic {
         });
     }
 
+    banSize() {
+        console.warn('hide size ' + this.sizeName);
+        let bannedSizes = getBannedSizes();
+        bannedSizes.push(this.sizeName);
+        setBannedSizes(bannedSizes);
+        globalFanfics.forEach(function (fanfic) {
+            if (fanfic.getFanficBanned())
+                fanfic.hideFanfic();
+        });
+    }
+
     hideFanfic() {
         let fanfic_block_disliked = " fanfic-block-disliked";
         let disliked_parameter_link = " disliked-parameter-link";
 
-        if (this.getFanficBanned())
-        {
-            if (!this.article.className.includes(fanfic_block_disliked))
-            {
+        if (this.getFanficBanned()) {
+            if (!this.article.className.includes(fanfic_block_disliked)) {
                 this.article.className += fanfic_block_disliked;
             }
         }
-        if (this.authorBanned())
-        {
-            if (!this.authorLink.className.includes(disliked_parameter_link))
-            {
+        if (this.authorBanned()) {
+            if (!this.authorLink.className.includes(disliked_parameter_link)) {
                 this.authorLink.className += disliked_parameter_link;
             }
             this.restoreAuthorBtn.style.display = "";
             this.authorBtn.style.display = "none";
         }
-        if (this.fanficBanned())
-        {
-            if (!this.title.className.includes(disliked_parameter_link))
-            {
+        if (this.fanficBanned()) {
+            if (!this.title.className.includes(disliked_parameter_link)) {
                 this.title.className += disliked_parameter_link;
             }
             this.restoreFanficBtn.style.display = "";
             this.fanficBtn.style.display = "none";
         }
-        if (this.directionBanned())
-        {
+        if (this.directionBanned()) {
             this.restoreDirectionBtn.style.display = "";
             this.directionBtn.style.display = "none";
+        }
+        if (this.sizeBanned()) {
+            this.restoreSizeBtn.style.display = "";
+            this.sizeBtn.style.display = "none";
         }
         this.fandoms.forEach(function (fandom) {
             fandom.hide();
@@ -404,26 +438,26 @@ class Fanfic {
         let fanfic_block_disliked = " fanfic-block-disliked";
         let disliked_parameter_link = " disliked-parameter-link";
 
-        if (!this.getFanficBanned())
-        {
+        if (!this.getFanficBanned()) {
             this.article.className = this.article.className.replace(fanfic_block_disliked, "");
         }
-        if (!this.authorBanned())
-        {
+        if (!this.authorBanned()) {
             this.authorLink.className = this.authorLink.className.replace(disliked_parameter_link, "");
             this.restoreAuthorBtn.style.display = "none";
             this.authorBtn.style.display = "";
         }
-        if (!this.fanficBanned())
-        {
+        if (!this.fanficBanned()) {
             this.title.className = this.title.className.replace(disliked_parameter_link, "");
             this.restoreFanficBtn.style.display = "none";
             this.fanficBtn.style.display = "";
         }
-        if (!this.directionBanned())
-        {
+        if (!this.directionBanned()) {
             this.restoreDirectionBtn.style.display = "none";
             this.directionBtn.style.display = "";
+        }
+        if (!this.sizeBanned()) {
+            this.restoreSizeBtn.style.display = "none";
+            this.sizeBtn.style.display = "";
         }
         this.fandoms.forEach(function (fandom) {
             fandom.unHide();
@@ -441,12 +475,17 @@ class Fanfic {
         return this.fanficBanned()
             || this.authorBanned()
             || this.directionBanned()
+            || this.sizeBanned()
             || this.anyFandomBanned()
             || this.anyPairingBanned();
     }
 
     directionBanned() {
         return getBannedDirections().includes(this.directionName);
+    }
+
+    sizeBanned() {
+        return getBannedSizes().includes(this.sizeName);
     }
 
     authorBanned() {
@@ -457,13 +496,13 @@ class Fanfic {
         return getBannedFanfics().includes(this.fanficId);
     }
 
-    anyFandomBanned(){
+    anyFandomBanned() {
         return this.fandoms.some(function (fandom) {
             return fandom.fandomBanned();
         });
     }
 
-    anyPairingBanned(){
+    anyPairingBanned() {
         return this.pairings.some(function (pairing) {
             return pairing.pairingBanned();
         });
