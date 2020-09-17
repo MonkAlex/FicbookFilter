@@ -519,6 +519,6 @@ class Fanfic {
             fanfic.hideFanfic();
     });
     
-    $("<style>.fanfic-block-disliked:not(:hover) { max-height: 60px; overflow: hidden; }</style>").appendTo(document.head);
+    $("<style>.fanfic-block-disliked:not(:hover) { max-height: 55px; overflow: hidden; }</style>").appendTo(document.head);
 })();
 console.log("Ficbook filter " + GM_info.script.version + " loaded.");
