@@ -10,7 +10,7 @@
 // @require         http://code.jquery.com/jquery-latest.min.js
 // @downloadURL     https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
 // @updateURL       https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
-// @version         2020.01.13a
+// @version         2020.09.17a
 // @author          MonkAlex
 // ==/UserScript==
 
