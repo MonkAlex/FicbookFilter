@@ -7,10 +7,10 @@
 // @exclude         htt*://ficbook.net/home/collections?type=update
 // @exclude         htt*://ficbook.net/home/change_*
 // @grant           none
-// @require         http://code.jquery.com/jquery-latest.min.js
+// @require         https://code.jquery.com/jquery-latest.min.js
 // @downloadURL     https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
 // @updateURL       https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
-// @version         2020.09.17a
+// @version         2021.02.07a
 // @author          MonkAlex
 // ==/UserScript==
 
