@@ -10,7 +10,7 @@
 // @require         https://code.jquery.com/jquery-latest.min.js
 // @downloadURL     https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
 // @updateURL       https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
-// @version         2021.02.07a
+// @version         2021.03.02a
 // @author          MonkAlex
 // ==/UserScript==
 
@@ -103,12 +103,17 @@ function addButton(root, title, inSup, fanfic, color, click) {
     button.addEventListener("click", click);
 
     if (inSup) {
-        let sup = document.createElement("sup");
-        sup.className = "count";
-        sup.appendChild(button);
-        button = sup;
+        let child = root.querySelector("a");
+
+        let span = document.createElement("span");
+        span.className = "title";
+        root.replaceChild(span, child);
+        span.appendChild(child);
+        span.appendChild(button);
     }
-    root.appendChild(button);
+    else {
+        root.appendChild(button);
+    }
     return button;
 }
 
@@ -250,24 +255,24 @@ class FanficPairing {
 
 class Fanfic {
     constructor(article) {
-        this.title = article.querySelector("a.visit-link");
+        this.title = article.querySelector("a.fanfic-inline-title");
         this.author = article.querySelector("span.author");
         this.authorLink = this.author.querySelector("a");
         this.authorId = parseInt(this.authorLink.href.match(/\/(\d+)+/)[1], 10);
         this.fanficId = parseInt(this.title.href.match(/\/(\d+)+/)[1], 10);
-        this.direction = article.querySelector("span.direction");
-        this.directionName = this.direction.className.replace("direction direction-before-", "");
+        this.direction = article.querySelector("div.direction");
+        this.directionName = this.direction.className.replace("badge-with-icon direction direction-before-", "").split(' ')[0];
         this.size = [...article.querySelectorAll('dd')]
             .filter(e => e.previousElementSibling != null && e.previousElementSibling.innerText == "Размер:")[0]
-            .querySelector('strong');
+            .querySelector('span');
         this.sizeName = this.size.innerText;
         this.article = article;
 
-        this.fandoms = Array.from(article.querySelector("dl.info dd").querySelectorAll("a")).map(function (fandom) {
+        this.fandoms = Array.from(article.querySelectorAll("dl.fanfic-inline-info dd")[1].querySelectorAll("a")).map(function (fandom) {
             return new FanficFandom(this, fandom);
         }, this);
 
-        this.pairings = Array.from(article.querySelectorAll("dl.info a.pairing-link")).map(function (pairing) {
+        this.pairings = Array.from(article.querySelectorAll("dl.fanfic-inline-info a.pairing-link")).map(function (pairing) {
             return new FanficPairing(this, pairing);
         }, this);
 
@@ -283,7 +288,7 @@ class Fanfic {
         this.sizeBtn = addButton(this.size.parentElement, `Забанить размер фанфика (${this.sizeName})`, false, this, 'rgb(180, 0, 0)', function () {
             this.fanfic.banSize();
         });
-        this.restoreFanficBtn = addButton(this.title.parentElement, "Вернуть фанфик", true, this, 'rgb(220, 220, 0)', function () {
+        this.restoreFanficBtn = addButton(this.fanficBtn.parentElement, "Вернуть фанфик", false, this, 'rgb(220, 220, 0)', function () {
             this.fanfic.restoreFanfic();
         });
         this.restoreAuthorBtn = addButton(this.author, "Вернуть автора", false, this, 'rgb(220, 220, 0)', function () {
@@ -512,13 +517,14 @@ class Fanfic {
 
 (function () {
     // Hide fanfics
-    $('article.block').each(function () {
+    $('article.fanfic-inline').each(function () {
         let fanfic = new Fanfic(this);
         globalFanfics.add(fanfic);
         if (fanfic.getFanficBanned())
             fanfic.hideFanfic();
     });
-    
-    $("<style>.fanfic-block-disliked:not(:hover) { max-height: 55px; overflow: hidden; }</style>").appendTo(document.head);
+
+    $("<style>.fanfic-block-disliked:not(:hover) { max-height: 45px; overflow: hidden; }</style>").appendTo(document.head);
+    $("<style>.fanfic-inline-title { margin-right: 5px !important; }</style>").appendTo(document.head);
 })();
 console.log("Ficbook filter " + GM_info.script.version + " loaded.");
