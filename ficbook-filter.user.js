@@ -10,7 +10,7 @@
 // @require         https://code.jquery.com/jquery-latest.min.js
 // @downloadURL     https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
 // @updateURL       https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
-// @version         2021.03.02a
+// @version         2021.03.24a
 // @author          MonkAlex
 // ==/UserScript==
 
@@ -255,7 +255,7 @@ class FanficPairing {
 
 class Fanfic {
     constructor(article) {
-        this.title = article.querySelector("a.fanfic-inline-title");
+        this.title = article.querySelector("h3.fanfic-inline-title a");
         this.author = article.querySelector("span.author");
         this.authorLink = this.author.querySelector("a");
         this.authorId = parseInt(this.authorLink.href.match(/\/(\d+)+/)[1], 10);
@@ -524,7 +524,7 @@ class Fanfic {
             fanfic.hideFanfic();
     });
 
-    $("<style>.fanfic-block-disliked:not(:hover) { max-height: 45px; overflow: hidden; }</style>").appendTo(document.head);
+    $("<style>.fanfic-block-disliked:not(:hover) { max-height: 40px; overflow: hidden; }</style>").appendTo(document.head);
     $("<style>.fanfic-inline-title { margin-right: 5px !important; }</style>").appendTo(document.head);
 })();
 console.log("Ficbook filter " + GM_info.script.version + " loaded.");
