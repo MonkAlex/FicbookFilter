@@ -10,7 +10,7 @@
 // @require         https://code.jquery.com/jquery-latest.min.js
 // @downloadURL     https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
 // @updateURL       https://raw.githubusercontent.com/MonkAlex/FicbookFilter/master/ficbook-filter.user.js
-// @version         2021.03.24a
+// @version         2021.04.08a
 // @author          MonkAlex
 // ==/UserScript==
 
@@ -43,10 +43,6 @@ function setBannedPairings(pairings) {
     localStorage.setItem('ficbookFilter.bannedPairings', JSON.stringify(pairings))
 }
 
-function setBannedSizes(sizes) {
-    localStorage.setItem('ficbookFilter.bannedSizes', JSON.stringify(sizes))
-}
-
 function getBannedAuthors() {
     const str = localStorage.getItem('ficbookFilter.bannedAuthors');
     return str ? JSON.parse(str) : []
@@ -69,11 +65,6 @@ function getBannedFandoms() {
 
 function getBannedPairings() {
     const str = localStorage.getItem('ficbookFilter.bannedPairings');
-    return str ? JSON.parse(str) : []
-}
-
-function getBannedSizes() {
-    const str = localStorage.getItem('ficbookFilter.bannedSizes');
     return str ? JSON.parse(str) : []
 }
 
@@ -262,10 +253,6 @@ class Fanfic {
         this.fanficId = parseInt(this.title.href.match(/\/(\d+)+/)[1], 10);
         this.direction = article.querySelector("div.direction");
         this.directionName = this.direction.className.replace("badge-with-icon direction direction-before-", "").split(' ')[0];
-        this.size = [...article.querySelectorAll('dd')]
-            .filter(e => e.previousElementSibling != null && e.previousElementSibling.innerText == "Размер:")[0]
-            .querySelector('span');
-        this.sizeName = this.size.innerText;
         this.article = article;
 
         this.fandoms = Array.from(article.querySelectorAll("dl.fanfic-inline-info dd")[1].querySelectorAll("a")).map(function (fandom) {
@@ -285,9 +272,6 @@ class Fanfic {
         this.directionBtn = addButton(this.direction, 'Забанить тип фанфиков', false, this, 'rgb(180, 0, 0)', function () {
             this.fanfic.banDirection();
         });
-        this.sizeBtn = addButton(this.size.parentElement, `Забанить размер фанфика (${this.sizeName})`, false, this, 'rgb(180, 0, 0)', function () {
-            this.fanfic.banSize();
-        });
         this.restoreFanficBtn = addButton(this.fanficBtn.parentElement, "Вернуть фанфик", false, this, 'rgb(220, 220, 0)', function () {
             this.fanfic.restoreFanfic();
         });
@@ -297,14 +281,10 @@ class Fanfic {
         this.restoreDirectionBtn = addButton(this.direction, "Вернуть тип фанфиков", false, this, 'rgb(220, 220, 0)', function () {
             this.fanfic.restoreDirection();
         });
-        this.restoreSizeBtn = addButton(this.size.parentElement, `Вернуть размер фанфика (${this.sizeName})`, false, this, 'rgb(220, 220, 0)', function () {
-            this.fanfic.restoreSize();
-        });
 
         this.restoreFanficBtn.style.display = "none";
         this.restoreAuthorBtn.style.display = "none";
         this.restoreDirectionBtn.style.display = "none";
-        this.restoreSizeBtn.style.display = "none";
     }
 
     restoreFanfic() {
@@ -343,19 +323,6 @@ class Fanfic {
         })
     }
 
-    restoreSize() {
-        let tempSizes = getBannedSizes();
-        if (tempSizes.includes(this.sizeName)) {
-            tempSizes.splice(tempSizes.indexOf(this.sizeName), 1);
-            setBannedSizes(tempSizes);
-            console.warn('restore size ' + this.sizeName);
-        }
-        globalFanfics.forEach(function (fanfic) {
-            if (!fanfic.getFanficBanned())
-                fanfic.unHideFanfic();
-        })
-    }
-
     banAuthor() {
         console.warn('hide author ' + this.authorId);
         let bannedAuthors = getBannedAuthors();
@@ -380,17 +347,6 @@ class Fanfic {
         let bannedDirections = getBannedDirections();
         bannedDirections.push(this.directionName);
         setBannedDirections(bannedDirections);
-        globalFanfics.forEach(function (fanfic) {
-            if (fanfic.getFanficBanned())
-                fanfic.hideFanfic();
-        });
-    }
-
-    banSize() {
-        console.warn('hide size ' + this.sizeName);
-        let bannedSizes = getBannedSizes();
-        bannedSizes.push(this.sizeName);
-        setBannedSizes(bannedSizes);
         globalFanfics.forEach(function (fanfic) {
             if (fanfic.getFanficBanned())
                 fanfic.hideFanfic();
@@ -424,10 +380,6 @@ class Fanfic {
             this.restoreDirectionBtn.style.display = "";
             this.directionBtn.style.display = "none";
         }
-        if (this.sizeBanned()) {
-            this.restoreSizeBtn.style.display = "";
-            this.sizeBtn.style.display = "none";
-        }
         this.fandoms.forEach(function (fandom) {
             fandom.hide();
         });
@@ -460,10 +412,6 @@ class Fanfic {
             this.restoreDirectionBtn.style.display = "none";
             this.directionBtn.style.display = "";
         }
-        if (!this.sizeBanned()) {
-            this.restoreSizeBtn.style.display = "none";
-            this.sizeBtn.style.display = "";
-        }
         this.fandoms.forEach(function (fandom) {
             fandom.unHide();
         });
@@ -480,17 +428,12 @@ class Fanfic {
         return this.fanficBanned()
             || this.authorBanned()
             || this.directionBanned()
-            || this.sizeBanned()
             || this.anyFandomBanned()
             || this.anyPairingBanned();
     }
 
     directionBanned() {
         return getBannedDirections().includes(this.directionName);
-    }
-
-    sizeBanned() {
-        return getBannedSizes().includes(this.sizeName);
     }
 
     authorBanned() {
